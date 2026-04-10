@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
   --bg-primary: #0a0c10;
@@ -50,7 +50,8 @@ body {
 /* ─── SIDEBAR ─── */
 .sidebar {
   width: var(--sidebar-width);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport — respeta barras del navegador móvil */
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -58,6 +59,10 @@ body {
   position: fixed;
   top: 0; left: 0;
   z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Safe area para iOS (notch / home indicator) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .sidebar-logo {
@@ -166,6 +171,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 }
 
