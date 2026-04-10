@@ -1,0 +1,379 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmergiSoft — Usuarios</title>
+  <link rel="stylesheet" href="css/style.css?v=5"/>
+</head>
+<body>
+
+<!-- ─── SIDEBAR OVERLAY (mobile) ─── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚨</div>
+    <div>
+      <div class="logo-text">EMERGISOFT</div>
+      <div class="logo-sub">Sistema de Gestión</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <a href="index.html" class="sidebar-link"><span class="icon">⊞</span> Dashboard</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Módulos</div>
+    <a href="alertas.html" class="sidebar-link">
+      <span class="icon">🔔</span> Alertas
+      <span class="sidebar-badge" id="sb-alertas">0</span>
+    </a>
+    <a href="recursos.html" class="sidebar-link"><span class="icon">📦</span> Recursos</a>
+    <a href="usuarios.html" class="sidebar-link active"><span class="icon">👥</span> Usuarios</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Sistema</div>
+    <a href="reportes.html" class="sidebar-link"><span class="icon">📊</span> Reportes</a>
+  </div>
+  <div class="sidebar-status">
+    <div class="status-indicator"><div class="status-dot"></div>Sistema operativo</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">v1.0 · Fidélitas</div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="2" y1="4" x2="16" y2="4"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="14" x2="16" y2="14"/>
+      </svg>
+    </button>
+    <div>
+      <div class="topbar-title">Gestión de Usuarios</div>
+      <div class="topbar-breadcrumb">EmergiSoft <span>/ Usuarios</span></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-time">00:00:00</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalNuevo')">+<span class="btn-label"> Nuevo Usuario</span></button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- Tabla principal -->
+    <div class="card">
+      <div class="card-header">
+        <span>👥</span>
+        <span class="card-title">Directorio de Usuarios</span>
+        <span class="card-subtitle" id="countLabel">—</span>
+      </div>
+      <div class="card-body" style="padding-bottom:0">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar por nombre, correo..."/>
+          </div>
+          <select class="filter-select" id="filterRol">
+            <option value="">Todo rol</option>
+            <option value="administrador">Administrador</option>
+            <option value="autoridad">Autoridad</option>
+            <option value="rescatista">Rescatista</option>
+            <option value="ciudadano">Ciudadano</option>
+          </select>
+          <select class="filter-select" id="filterEstado">
+            <option value="">Todo estado</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th class="col-hide-mobile">ID</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th class="col-hide-mobile">Registro</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaUsuarios"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display:none">
+          <div class="empty-icon">👤</div>
+          <p>No se encontraron usuarios con estos filtros.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL: Nuevo Usuario -->
+<div class="modal-overlay" id="modalNuevo">
+  <div class="modal">
+    <div class="modal-header">
+      <span>👤</span>
+      <span class="modal-title">Registrar Nuevo Usuario</span>
+      <button class="modal-close" onclick="closeModal('modalNuevo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre Completo <span class="required">*</span></label>
+        <input type="text" class="form-control" id="nNombre" placeholder="Ej: María González Rodríguez"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico <span class="required">*</span></label>
+        <input type="email" class="form-control" id="nCorreo" placeholder="usuario@institucion.cr"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rol <span class="required">*</span></label>
+          <select class="form-control" id="nRol">
+            <option value="">Seleccionar...</option>
+            <option value="administrador">Administrador</option>
+            <option value="autoridad">Autoridad</option>
+            <option value="rescatista">Rescatista</option>
+            <option value="ciudadano">Ciudadano</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="nEstado">
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contraseña <span class="required">*</span></label>
+          <input type="password" class="form-control" id="nPass" placeholder="Mín. 8 caracteres"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar Contraseña <span class="required">*</span></label>
+          <input type="password" class="form-control" id="nPass2" placeholder="Repetir contraseña"/>
+        </div>
+      </div>
+      <div id="passError" style="color:var(--accent-red);font-size:11px;margin-top:-8px;display:none">Las contraseñas no coinciden o son muy cortas.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="registrarUsuario()">👤 Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Editar Usuario -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <div class="modal-header">
+      <span>✏</span>
+      <span class="modal-title">Editar Usuario</span>
+      <button class="modal-close" onclick="closeModal('modalEditar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="editUserPanel"></div>
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label">Nombre Completo</label>
+        <input type="text" class="form-control" id="eNombre"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" class="form-control" id="eCorreo"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rol</label>
+          <select class="form-control" id="eRol">
+            <option value="administrador">Administrador</option>
+            <option value="autoridad">Autoridad</option>
+            <option value="rescatista">Rescatista</option>
+            <option value="ciudadano">Ciudadano</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="eEstado">
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="eliminarUsuario()" style="margin-right:auto;color:var(--accent-red)">🗑 Eliminar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalEditar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/notif.js"></script>
+<script src="js/app.js"></script>
+<script>
+let currentId = null;
+
+const rolColors = {
+  administrador: '#8b5cf6', autoridad: '#4a9eff',
+  rescatista: '#f5852a', ciudadano: '#8a93a8'
+};
+
+function getInitials(nombre) {
+  return nombre.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+}
+
+function render() {
+  const usuarios = DB.get('usuarios');
+  document.getElementById('sb-alertas').textContent = DB.get('alertas').filter(a=>a.estado==='activa').length;
+  document.getElementById('countLabel').textContent = `${usuarios.length} usuarios`;
+
+  document.getElementById('statsRow').innerHTML = [
+    { label:'Total Usuarios', value:usuarios.length, color:'blue', icon:'👥' },
+    { label:'Activos', value:usuarios.filter(u=>u.estado==='activo').length, color:'green', icon:'✓' },
+    { label:'Administradores', value:usuarios.filter(u=>u.rol==='administrador').length, color:'purple', icon:'👑' },
+    { label:'Autoridades', value:usuarios.filter(u=>u.rol==='autoridad').length, color:'blue', icon:'🛡' },
+    { label:'Rescatistas', value:usuarios.filter(u=>u.rol==='rescatista').length, color:'orange', icon:'🚑' },
+  ].map(s=>`<div class="stat-card ${s.color}"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div><div class="stat-icon">${s.icon}</div></div>`).join('');
+
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const r = document.getElementById('filterRol').value;
+  const e = document.getElementById('filterEstado').value;
+  let usuarios = DB.get('usuarios');
+  if (q) usuarios = usuarios.filter(u => u.nombre.toLowerCase().includes(q) || u.correo.toLowerCase().includes(q));
+  if (r) usuarios = usuarios.filter(u => u.rol === r);
+  if (e) usuarios = usuarios.filter(u => u.estado === e);
+
+  const tbody = document.getElementById('tablaUsuarios');
+  const empty = document.getElementById('emptyState');
+
+  if (!usuarios.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = usuarios.map(u => {
+    const color = rolColors[u.rol] || '#8a93a8';
+    return `
+    <tr onclick="editarUsuario('${u.id}')" style="cursor:pointer">
+      <td>
+        <div class="user-row">
+          <div class="avatar" style="background:${color}22;color:${color};border:1px solid ${color}44">${getInitials(u.nombre)}</div>
+          <div class="user-info">
+            <div class="user-name">${u.nombre}</div>
+            <div class="user-email">${u.correo}</div>
+          </div>
+        </div>
+      </td>
+      <td class="td-mono col-hide-mobile">${u.id}</td>
+      <td>${rolBadge(u.rol)}</td>
+      <td>${estadoBadge(u.estado)}</td>
+      <td class="td-mono col-hide-mobile">${formatDate(u.fecha)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editarUsuario('${u.id}')">Editar</button>
+      </td>
+    </tr>
+  `}).join('');
+}
+
+function editarUsuario(id) {
+  const u = DB.get('usuarios').find(x=>x.id===id);
+  if (!u) return;
+  currentId = id;
+  const color = rolColors[u.rol] || '#8a93a8';
+  document.getElementById('editUserPanel').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:4px;">
+      <div class="avatar" style="background:${color}22;color:${color};border:1px solid ${color}44;width:44px;height:44px;font-size:18px">${getInitials(u.nombre)}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${u.nombre}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${u.correo}</div>
+        <div style="margin-top:4px">${rolBadge(u.rol)} ${estadoBadge(u.estado)}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('eNombre').value = u.nombre;
+  document.getElementById('eCorreo').value = u.correo;
+  document.getElementById('eRol').value = u.rol;
+  document.getElementById('eEstado').value = u.estado;
+  openModal('modalEditar');
+}
+
+function guardarEdicion() {
+  if (!currentId) return;
+  let usuarios = DB.get('usuarios');
+  usuarios = usuarios.map(u => u.id === currentId ? {
+    ...u,
+    nombre: document.getElementById('eNombre').value,
+    correo: document.getElementById('eCorreo').value,
+    rol: document.getElementById('eRol').value,
+    estado: document.getElementById('eEstado').value,
+  } : u);
+  DB.set('usuarios', usuarios);
+  closeModal('modalEditar');
+  showToast('Usuario actualizado correctamente.', 'success');
+  render();
+}
+
+function eliminarUsuario() {
+  if (!currentId || !confirm('¿Eliminar este usuario permanentemente?')) return;
+  DB.set('usuarios', DB.get('usuarios').filter(u=>u.id!==currentId));
+  closeModal('modalEditar');
+  showToast('Usuario eliminado.', 'warning');
+  render();
+}
+
+function registrarUsuario() {
+  const nombre = document.getElementById('nNombre').value.trim();
+  const correo = document.getElementById('nCorreo').value.trim();
+  const rol = document.getElementById('nRol').value;
+  const pass = document.getElementById('nPass').value;
+  const pass2 = document.getElementById('nPass2').value;
+  const errEl = document.getElementById('passError');
+
+  if (!nombre || !correo || !rol) { showToast('Completá todos los campos obligatorios.', 'error'); return; }
+  if (pass.length < 8 || pass !== pass2) {
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+
+  const usuarios = DB.get('usuarios');
+  if (usuarios.find(u=>u.correo===correo)) {
+    showToast('Ese correo ya está registrado.', 'error'); return;
+  }
+
+  usuarios.unshift({
+    id: genId('U'),
+    nombre, correo, rol,
+    estado: document.getElementById('nEstado').value,
+    fecha: new Date().toISOString().split('T')[0],
+  });
+  DB.set('usuarios', usuarios);
+  closeModal('modalNuevo');
+  showToast('Usuario registrado exitosamente.', 'success');
+  ['nNombre','nCorreo','nRol','nPass','nPass2'].forEach(id => document.getElementById(id).value='');
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Solo administrador puede ver este módulo
+  if (!Auth.can('verUsuarios')) {
+    window.location.href = 'index.html';
+    return;
+  }
+  render();
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterRol').addEventListener('change', applyFilters);
+  document.getElementById('filterEstado').addEventListener('change', applyFilters);
+});
+</script>
+</body>
+</html>

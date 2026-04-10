@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmergiSoft — Recursos</title>
+  <link rel="stylesheet" href="css/style.css?v=5"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<!-- ─── SIDEBAR OVERLAY (mobile) ─── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚨</div>
+    <div>
+      <div class="logo-text">EMERGISOFT</div>
+      <div class="logo-sub">Sistema de Gestión</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <a href="index.html" class="sidebar-link"><span class="icon">⊞</span> Dashboard</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Módulos</div>
+    <a href="alertas.html" class="sidebar-link">
+      <span class="icon">🔔</span> Alertas
+      <span class="sidebar-badge" id="sb-alertas">0</span>
+    </a>
+    <a href="recursos.html" class="sidebar-link active"><span class="icon">📦</span> Recursos</a>
+    <a href="usuarios.html" class="sidebar-link"><span class="icon">👥</span> Usuarios</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Sistema</div>
+    <a href="reportes.html" class="sidebar-link"><span class="icon">📊</span> Reportes</a>
+  </div>
+  <div class="sidebar-status">
+    <div class="status-indicator"><div class="status-dot"></div>Sistema operativo</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">v1.0 · Fidélitas</div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="2" y1="4" x2="16" y2="4"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="14" x2="16" y2="14"/>
+      </svg>
+    </button>
+    <div>
+      <div class="topbar-title">Gestión de Recursos</div>
+      <div class="topbar-breadcrumb">EmergiSoft <span>/ Recursos</span></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-time">00:00:00</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalNuevo')">+<span class="btn-label"> Registrar Recurso</span></button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- Vista: tarjetas o mapa -->
+    <div class="card section-gap">
+      <div class="card-header">
+        <span>📦</span>
+        <span class="card-title">Inventario de Recursos</span>
+        <span class="card-subtitle" id="countLabel">—</span>
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btnCards" onclick="setView('cards')">⊞ Tarjetas</button>
+            <button class="view-btn" id="btnTable" onclick="setView('table')">☰ Tabla</button>
+            <button class="view-btn" id="btnMap" onclick="setView('map')">🗺 Mapa</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body" style="padding-bottom:0">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar por nombre, ubicación..."/>
+          </div>
+          <select class="filter-select" id="filterTipo">
+            <option value="">Todo tipo</option>
+            <option>Hospital</option>
+            <option>Albergue</option>
+            <option>Vehículo</option>
+            <option>Personal</option>
+            <option>Suministros</option>
+          </select>
+          <select class="filter-select" id="filterEstado">
+            <option value="">Todo estado</option>
+            <option value="disponible">Disponible</option>
+            <option value="ocupado">Ocupado</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Vista tarjetas -->
+      <div class="card-body" id="viewCards">
+        <div class="resource-grid" id="gridRecursos"></div>
+        <div id="emptyCards" class="empty-state" style="display:none">
+          <div class="empty-icon">📦</div><p>No se encontraron recursos.</p>
+        </div>
+      </div>
+
+      <!-- Vista tabla -->
+      <div id="viewTable" style="display:none;overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Ubicación</th><th>Estado</th><th>Capacidad</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tablaRecursos"></tbody>
+        </table>
+        <div id="emptyTable" class="empty-state" style="display:none">
+          <div class="empty-icon">📦</div><p>No se encontraron recursos.</p>
+        </div>
+      </div>
+
+      <!-- Vista mapa -->
+      <div id="viewMap" style="display:none; padding:16px">
+        <div id="map-recursos"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL: Nuevo Recurso -->
+<div class="modal-overlay" id="modalNuevo">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📦</span>
+      <span class="modal-title">Registrar Recurso</span>
+      <button class="modal-close" onclick="closeModal('modalNuevo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre del Recurso <span class="required">*</span></label>
+        <input type="text" class="form-control" id="rNombre" placeholder="Ej: Hospital San Juan de Dios"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo <span class="required">*</span></label>
+          <select class="form-control" id="rTipo">
+            <option value="">Seleccionar...</option>
+            <option>Hospital</option>
+            <option>Albergue</option>
+            <option>Vehículo</option>
+            <option>Personal</option>
+            <option>Suministros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado <span class="required">*</span></label>
+          <select class="form-control" id="rEstado">
+            <option value="disponible">Disponible</option>
+            <option value="ocupado">Ocupado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ubicación <span class="required">*</span></label>
+        <input type="text" class="form-control" id="rUbicacion" placeholder="Ej: San José Centro"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Latitud</label>
+          <input type="number" class="form-control" id="rLat" placeholder="9.9325" step="0.0001"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitud</label>
+          <input type="number" class="form-control" id="rLng" placeholder="-84.0795" step="0.0001"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacidad / Cantidad</label>
+        <input type="number" class="form-control" id="rCapacidad" placeholder="Ej: 200" min="1"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalNuevo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="registrarRecurso()">📦 Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Editar Recurso -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <div class="modal-header">
+      <span>✏</span>
+      <span class="modal-title">Editar Recurso</span>
+      <button class="modal-close" onclick="closeModal('modalEditar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="required">*</span></label>
+        <input type="text" class="form-control" id="eNombre"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-control" id="eTipo">
+            <option>Hospital</option><option>Albergue</option>
+            <option>Vehículo</option><option>Personal</option><option>Suministros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-control" id="eEstado">
+            <option value="disponible">Disponible</option>
+            <option value="ocupado">Ocupado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ubicación</label>
+        <input type="text" class="form-control" id="eUbicacion"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacidad</label>
+        <input type="number" class="form-control" id="eCapacidad"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="eliminarRecurso()" style="margin-right:auto;color:var(--accent-red)">🗑 Eliminar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalEditar')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicion()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notif.js"></script>
+<script src="js/app.js"></script>
+<script>
+let currentId = null;
+let currentView = 'cards';
+let mapaInit = false;
+let mapa = null;
+
+const tipoIcono = { Hospital:'🏥', Albergue:'🏠', 'Vehículo':'🚑', Personal:'👥', Suministros:'📦' };
+
+function setView(v) {
+  currentView = v;
+  ['cards','table','map'].forEach(x => {
+    document.getElementById('view'+x.charAt(0).toUpperCase()+x.slice(1)).style.display = x===v ? 'block' : 'none';
+    document.getElementById('btn'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active', x===v);
+  });
+  if (v==='map' && !mapaInit) initMapa();
+  applyFilters();
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const t = document.getElementById('filterTipo').value;
+  const e = document.getElementById('filterEstado').value;
+  let recursos = DB.get('recursos');
+  if (q) recursos = recursos.filter(r => r.nombre.toLowerCase().includes(q) || r.ubicacion.toLowerCase().includes(q));
+  if (t) recursos = recursos.filter(r => r.tipo === t);
+  if (e) recursos = recursos.filter(r => r.estado === e);
+  return recursos;
+}
+
+function render() {
+  const recursos = DB.get('recursos');
+  document.getElementById('sb-alertas').textContent = DB.get('alertas').filter(a=>a.estado==='activa').length;
+  document.getElementById('countLabel').textContent = `${recursos.length} recursos`;
+
+  document.getElementById('statsRow').innerHTML = [
+    { label:'Total Recursos', value:recursos.length, color:'blue', icon:'📦' },
+    { label:'Disponibles', value:recursos.filter(r=>r.estado==='disponible').length, color:'green', icon:'✓' },
+    { label:'Ocupados', value:recursos.filter(r=>r.estado==='ocupado').length, color:'orange', icon:'⚙' },
+    { label:'Hospitales', value:recursos.filter(r=>r.tipo==='Hospital').length, color:'red', icon:'🏥' },
+    { label:'Albergues', value:recursos.filter(r=>r.tipo==='Albergue').length, color:'purple', icon:'🏠' },
+  ].map(s=>`<div class="stat-card ${s.color}"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div><div class="stat-icon">${s.icon}</div></div>`).join('');
+
+  applyFilters();
+}
+
+function applyFilters() {
+  const recursos = getFiltered();
+  if (currentView === 'cards') renderCards(recursos);
+  else if (currentView === 'table') renderTable(recursos);
+  else if (currentView === 'map' && mapa) updateMapa(recursos);
+}
+
+function renderCards(recursos) {
+  const grid = document.getElementById('gridRecursos');
+  const empty = document.getElementById('emptyCards');
+  if (!recursos.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = recursos.map(r => `
+    <div class="resource-card ${r.estado}" onclick="editarRecurso('${r.id}')">
+      <div class="resource-type-icon">${tipoIcono[r.tipo]||'📦'}</div>
+      <div class="resource-name">${r.nombre}</div>
+      <div class="resource-meta">${r.tipo} · ${r.ubicacion}</div>
+      ${estadoBadge(r.estado)}
+      <div class="resource-cap">Cap: ${r.capacidad}</div>
+    </div>
+  `).join('');
+}
+
+function renderTable(recursos) {
+  const tbody = document.getElementById('tablaRecursos');
+  const empty = document.getElementById('emptyTable');
+  if (!recursos.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML = recursos.map(r => `
+    <tr onclick="editarRecurso('${r.id}')" style="cursor:pointer">
+      <td class="td-mono">${r.id}</td>
+      <td class="td-primary">${r.nombre}</td>
+      <td>${tipoIcono[r.tipo]||'📦'} ${r.tipo}</td>
+      <td>${r.ubicacion}</td>
+      <td>${estadoBadge(r.estado)}</td>
+      <td class="td-mono">${r.capacidad}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editarRecurso('${r.id}')">Editar</button></td>
+    </tr>
+  `).join('');
+}
+
+function initMapa() {
+  mapaInit = true;
+  mapa = L.map('map-recursos').setView([9.93, -84.08], 9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains:'abcd', maxZoom:19, attribution:'© CartoDB'
+  }).addTo(mapa);
+  updateMapa(DB.get('recursos'));
+}
+
+function updateMapa(recursos) {
+  mapa.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.CircleMarker) mapa.removeLayer(l); });
+  recursos.forEach(r => {
+    const color = r.estado === 'disponible' ? '#2dd08a' : '#f5852a';
+    L.circleMarker([r.lat, r.lng], {
+      radius: 10, color, fillColor: color, fillOpacity: 0.7, weight: 2
+    }).addTo(mapa).bindPopup(`<b>${tipoIcono[r.tipo]||''} ${r.nombre}</b><br>${r.tipo} · ${r.ubicacion}<br><b>${r.estado.toUpperCase()}</b>`);
+  });
+}
+
+function editarRecurso(id) {
+  const r = DB.get('recursos').find(x=>x.id===id);
+  if (!r) return;
+  currentId = id;
+  document.getElementById('eNombre').value = r.nombre;
+  document.getElementById('eTipo').value = r.tipo;
+  document.getElementById('eEstado').value = r.estado;
+  document.getElementById('eUbicacion').value = r.ubicacion;
+  document.getElementById('eCapacidad').value = r.capacidad;
+  openModal('modalEditar');
+}
+
+function guardarEdicion() {
+  if (!currentId) return;
+  let recursos = DB.get('recursos');
+  recursos = recursos.map(r => r.id === currentId ? {
+    ...r,
+    nombre: document.getElementById('eNombre').value,
+    tipo: document.getElementById('eTipo').value,
+    estado: document.getElementById('eEstado').value,
+    ubicacion: document.getElementById('eUbicacion').value,
+    capacidad: parseInt(document.getElementById('eCapacidad').value)||0,
+  } : r);
+  DB.set('recursos', recursos);
+  closeModal('modalEditar');
+  showToast('Recurso actualizado.', 'success');
+  render();
+}
+
+function eliminarRecurso() {
+  if (!currentId || !confirm('¿Eliminar este recurso?')) return;
+  DB.set('recursos', DB.get('recursos').filter(r=>r.id!==currentId));
+  closeModal('modalEditar');
+  showToast('Recurso eliminado.', 'warning');
+  render();
+}
+
+function registrarRecurso() {
+  const nombre = document.getElementById('rNombre').value.trim();
+  const tipo = document.getElementById('rTipo').value;
+  const ubicacion = document.getElementById('rUbicacion').value.trim();
+  if (!nombre || !tipo || !ubicacion) { showToast('Completá los campos obligatorios.', 'error'); return; }
+  const recursos = DB.get('recursos');
+  recursos.unshift({
+    id: genId('R'),
+    nombre, tipo, ubicacion,
+    lat: parseFloat(document.getElementById('rLat').value)||9.93,
+    lng: parseFloat(document.getElementById('rLng').value)||-84.08,
+    estado: document.getElementById('rEstado').value,
+    capacidad: parseInt(document.getElementById('rCapacidad').value)||0,
+    cantidad: 1,
+  });
+  DB.set('recursos', recursos);
+  closeModal('modalNuevo');
+  showToast('Recurso registrado.', 'success');
+  ['rNombre','rTipo','rUbicacion','rLat','rLng','rCapacidad'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Verificar acceso al módulo
+  if (!Auth.can('verRecursos')) {
+    window.location.href = 'index.html';
+    return;
+  }
+  // Ocultar acciones de gestión si no tiene permiso
+  if (!Auth.can('gestionarRecurso')) {
+    document.querySelectorAll('[onclick="openModal(\'modalNuevo\')"]').forEach(el => el.style.display='none');
+  }
+  render();
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterTipo').addEventListener('change', applyFilters);
+  document.getElementById('filterEstado').addEventListener('change', applyFilters);
+});
+</script>
+</body>
+</html>

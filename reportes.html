@@ -1,0 +1,477 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmergiSoft — Reportes</title>
+  <link rel="stylesheet" href="css/style.css?v=5"/>
+</head>
+<body>
+
+<!-- ─── SIDEBAR OVERLAY (mobile) ─── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚨</div>
+    <div>
+      <div class="logo-text">EMERGISOFT</div>
+      <div class="logo-sub">Sistema de Gestión</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <a href="index.html" class="sidebar-link"><span class="icon">⊞</span> Dashboard</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Módulos</div>
+    <a href="alertas.html" class="sidebar-link">
+      <span class="icon">🔔</span> Alertas
+      <span class="sidebar-badge" id="sb-alertas">0</span>
+    </a>
+    <a href="recursos.html" class="sidebar-link"><span class="icon">📦</span> Recursos</a>
+    <a href="usuarios.html" class="sidebar-link"><span class="icon">👥</span> Usuarios</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Sistema</div>
+    <a href="reportes.html" class="sidebar-link active"><span class="icon">📊</span> Reportes</a>
+  </div>
+  <div class="sidebar-status">
+    <div class="status-indicator"><div class="status-dot"></div>Sistema operativo</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">v1.0 · Fidélitas</div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="2" y1="4" x2="16" y2="4"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="14" x2="16" y2="14"/>
+      </svg>
+    </button>
+    <div>
+      <div class="topbar-title">Reportes</div>
+      <div class="topbar-breadcrumb">EmergiSoft <span>/ Reportes</span></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-time">00:00:00</span>
+      <button class="btn btn-ghost btn-sm print-btn" onclick="window.print()">🖨 Imprimir Reporte</button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Header del reporte -->
+    <div class="report-header">
+      <div>
+        <div class="report-title">Reporte General del Sistema</div>
+        <div class="report-subtitle" id="reportDate">Generado el —</div>
+      </div>
+      <div style="display:flex;gap:8px" class="report-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">↓ Exportar CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+
+    <!-- KPIs principales -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- Fila 1: Alertas por tipo + Alertas por gravedad -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>📊</span>
+          <span class="chart-card-title">Alertas por Tipo</span>
+          <span class="chart-card-sub" id="subTipo">—</span>
+        </div>
+        <div class="chart-body chart-body-split">
+          <canvas id="chartTipo"></canvas>
+          <div class="legend-list" id="legendTipo"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>⚠</span>
+          <span class="chart-card-title">Alertas por Gravedad</span>
+          <span class="chart-card-sub" id="subGravedad">—</span>
+        </div>
+        <div class="chart-body chart-body-split">
+          <canvas id="chartGravedad"></canvas>
+          <div class="legend-list" id="legendGravedad"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 2: Alertas por estado + Recursos -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>🔄</span>
+          <span class="chart-card-title">Alertas por Estado</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartEstado"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>📦</span>
+          <span class="chart-card-title">Recursos por Tipo</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartRecursos"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila 3: Actividad por usuario + Disponibilidad recursos -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>👥</span>
+          <span class="chart-card-title">Usuarios por Rol</span>
+        </div>
+        <div class="chart-body chart-body-split">
+          <canvas id="chartUsuarios"></canvas>
+          <div class="legend-list" id="legendUsuarios"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span>✅</span>
+          <span class="chart-card-title">Disponibilidad de Recursos</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="chartDisponibilidad"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla resumen alertas recientes -->
+    <div class="chart-card" style="margin-bottom:20px">
+      <div class="chart-card-header">
+        <span>📋</span>
+        <span class="chart-card-title">Últimas 10 Alertas Registradas</span>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Tipo</th><th>Ubicación</th>
+              <th>Gravedad</th><th>Estado</th><th>Reportado por</th><th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tablaResumen"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notif.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ─── PALETA ────────────────────────────────────────────────────────────────
+const COLORS = {
+  red:    '#e84242', orange: '#f5852a', yellow: '#f0c040',
+  green:  '#2dd08a', blue:   '#4a9eff', purple: '#8b5cf6',
+  teal:   '#2dd4bf', pink:   '#f472b6',
+};
+
+const CHART_DEFAULTS = {
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1c2029',
+      borderColor: '#2e3548',
+      borderWidth: 1,
+      titleColor: '#e8ecf4',
+      bodyColor: '#8a93a8',
+      padding: 10,
+      titleFont: { family: "'Space Mono', monospace", size: 11 },
+      bodyFont: { family: "'IBM Plex Sans', sans-serif", size: 12 },
+    }
+  },
+  animation: { duration: 800, easing: 'easeInOutQuart' },
+};
+
+// Configurar defaults globales de Chart.js
+Chart.defaults.color = '#8a93a8';
+Chart.defaults.borderColor = '#252a35';
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+
+// ─── DONUT CHART helper ────────────────────────────────────────────────────
+function makeDonut(canvasId, labels, values, colors) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.map(c => c + 'cc'),
+        borderColor: colors,
+        borderWidth: 2,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '68%',
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed} (${((ctx.parsed / ctx.dataset.data.reduce((a,b)=>a+b,0))*100).toFixed(0)}%)`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─── BAR CHART helper ─────────────────────────────────────────────────────
+function makeBar(canvasId, labels, values, colors, horizontal = false) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.map(c => c + 'bb'),
+        borderColor: colors,
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      indexAxis: horizontal ? 'y' : 'x',
+      scales: {
+        x: {
+          grid: { color: '#1c2029' },
+          ticks: { color: '#555d70', font: { size: 11 } },
+        },
+        y: {
+          grid: { color: '#1c2029' },
+          ticks: { color: '#555d70', font: { size: 11 }, stepSize: 1 },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+}
+
+// ─── LEGEND helper ─────────────────────────────────────────────────────────
+function makeLegend(containerId, labels, values, colors) {
+  const total = values.reduce((a,b) => a+b, 0);
+  document.getElementById(containerId).innerHTML = labels.map((l,i) => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${colors[i]}"></div>
+      <span>${l}</span>
+      <span class="legend-val">${values[i]}</span>
+      <span class="legend-pct">${total ? ((values[i]/total)*100).toFixed(0)+'%' : '0%'}</span>
+    </div>
+  `).join('');
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────
+function buildReports() {
+  const alertas  = DB.get('alertas');
+  const recursos = DB.get('recursos');
+  const usuarios = DB.get('usuarios');
+
+  // Fecha del reporte
+  document.getElementById('reportDate').textContent =
+    'Generado el ' + new Date().toLocaleDateString('es-CR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) +
+    ' a las ' + new Date().toLocaleTimeString('es-CR', { hour:'2-digit', minute:'2-digit' });
+
+  // ─ Sidebar badge
+  document.getElementById('sb-alertas').textContent = alertas.filter(a=>a.estado==='activa').length;
+
+  // ─ KPIs
+  const activas    = alertas.filter(a => a.estado === 'activa').length;
+  const resueltas  = alertas.filter(a => a.estado === 'resuelta').length;
+  const criticas   = alertas.filter(a => a.gravedad === 'critico').length;
+  const dispRec    = recursos.filter(r => r.estado === 'disponible').length;
+  const usersActivos = usuarios.filter(u => u.estado === 'activo').length;
+  const tasaResolucion = alertas.length ? Math.round((resueltas / alertas.length) * 100) : 0;
+
+  document.getElementById('kpiGrid').innerHTML = [
+    { label:'Total Alertas',         value: alertas.length,   detail:'Historial completo',                  color:'blue',   icon:'📋' },
+    { label:'Alertas Activas',        value: activas,          detail:'Requieren atención',                   color:'red',    icon:'🚨' },
+    { label:'Alertas Críticas',       value: criticas,         detail:'Prioridad máxima',                     color:'orange', icon:'⚠' },
+    { label:'Tasa de Resolución',     value: tasaResolucion+'%', detail:`${resueltas} de ${alertas.length} resueltas`, color:'green', icon:'✓' },
+    { label:'Recursos Disponibles',   value: dispRec,          detail:`de ${recursos.length} totales`,        color:'purple', icon:'📦' },
+    { label:'Usuarios Activos',       value: usersActivos,     detail:`de ${usuarios.length} registrados`,    color:'yellow', icon:'👥' },
+  ].map(k => `
+    <div class="kpi-card ${k.color}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-detail">${k.detail}</div>
+      <div class="kpi-icon">${k.icon}</div>
+    </div>
+  `).join('');
+
+  // ─ Chart 1: Alertas por tipo (donut)
+  const tipos = {};
+  alertas.forEach(a => tipos[a.tipo] = (tipos[a.tipo]||0)+1);
+  const tipoLabels = Object.keys(tipos);
+  const tipoVals   = Object.values(tipos);
+  const tipoColors = [COLORS.blue, COLORS.red, COLORS.orange, COLORS.yellow, COLORS.green, COLORS.purple, COLORS.teal, COLORS.pink];
+  makeDonut('chartTipo', tipoLabels, tipoVals, tipoColors.slice(0, tipoLabels.length));
+  makeLegend('legendTipo', tipoLabels, tipoVals, tipoColors.slice(0, tipoLabels.length));
+  document.getElementById('subTipo').textContent = `${tipoLabels.length} tipos registrados`;
+
+  // ─ Chart 2: Alertas por gravedad (donut)
+  const gravLabels = ['Crítico', 'Alto', 'Medio', 'Bajo'];
+  const gravKeys   = ['critico','alto','medio','bajo'];
+  const gravVals   = gravKeys.map(g => alertas.filter(a=>a.gravedad===g).length);
+  const gravColors = [COLORS.red, COLORS.orange, COLORS.yellow, COLORS.green];
+  makeDonut('chartGravedad', gravLabels, gravVals, gravColors);
+  makeLegend('legendGravedad', gravLabels, gravVals, gravColors);
+  document.getElementById('subGravedad').textContent = `${alertas.length} alertas totales`;
+
+  // ─ Chart 3: Alertas por estado (barras horizontales)
+  const estadoLabels = ['Activa', 'En Atención', 'Resuelta'];
+  const estadoVals   = [
+    alertas.filter(a=>a.estado==='activa').length,
+    alertas.filter(a=>a.estado==='en_atencion').length,
+    alertas.filter(a=>a.estado==='resuelta').length,
+  ];
+  makeBar('chartEstado', estadoLabels, estadoVals,
+    [COLORS.red, COLORS.orange, COLORS.green], true);
+
+  // ─ Chart 4: Recursos por tipo (barras)
+  const recTipos = {};
+  recursos.forEach(r => recTipos[r.tipo] = (recTipos[r.tipo]||0)+1);
+  const recLabels = Object.keys(recTipos);
+  const recVals   = Object.values(recTipos);
+  const recColors = [COLORS.blue, COLORS.teal, COLORS.purple, COLORS.pink, COLORS.orange];
+  makeBar('chartRecursos', recLabels, recVals, recColors.slice(0, recLabels.length));
+
+  // ─ Chart 5: Usuarios por rol (donut)
+  const rolLabels = ['Administrador', 'Autoridad', 'Rescatista', 'Ciudadano'];
+  const rolKeys   = ['administrador','autoridad','rescatista','ciudadano'];
+  const rolVals   = rolKeys.map(r => usuarios.filter(u=>u.rol===r).length);
+  const rolColors = [COLORS.purple, COLORS.blue, COLORS.orange, COLORS.green];
+  makeDonut('chartUsuarios', rolLabels, rolVals, rolColors);
+  makeLegend('legendUsuarios', rolLabels, rolVals, rolColors);
+
+  // ─ Chart 6: Disponibilidad recursos (barras apiladas)
+  const dispTipos = {};
+  const ocupTipos = {};
+  recursos.forEach(r => {
+    if (r.estado === 'disponible') dispTipos[r.tipo] = (dispTipos[r.tipo]||0)+1;
+    else ocupTipos[r.tipo] = (ocupTipos[r.tipo]||0)+1;
+  });
+  const allTipos = [...new Set(recursos.map(r=>r.tipo))];
+  const ctx6 = document.getElementById('chartDisponibilidad').getContext('2d');
+  new Chart(ctx6, {
+    type: 'bar',
+    data: {
+      labels: allTipos,
+      datasets: [
+        {
+          label: 'Disponible',
+          data: allTipos.map(t => dispTipos[t]||0),
+          backgroundColor: COLORS.green + 'bb',
+          borderColor: COLORS.green,
+          borderWidth: 1, borderRadius: 4,
+        },
+        {
+          label: 'Ocupado',
+          data: allTipos.map(t => ocupTipos[t]||0),
+          backgroundColor: COLORS.orange + 'bb',
+          borderColor: COLORS.orange,
+          borderWidth: 1, borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: '#8a93a8',
+            font: { size: 11 },
+            boxWidth: 12, boxHeight: 12,
+            padding: 16,
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid:{ color:'#1c2029' }, ticks:{ color:'#555d70', font:{size:11} } },
+        y: { stacked: true, grid:{ color:'#1c2029' }, ticks:{ color:'#555d70', font:{size:11}, stepSize:1 }, beginAtZero:true }
+      }
+    }
+  });
+
+  // ─ Tabla resumen
+  const recientes = [...alertas].sort((a,b) => new Date(b.fecha)-new Date(a.fecha)).slice(0,10);
+  document.getElementById('tablaResumen').innerHTML = recientes.map(a => `
+    <tr>
+      <td class="td-mono">${a.id}</td>
+      <td class="td-primary">${a.tipo}</td>
+      <td>${a.ubicacion}</td>
+      <td>${gravedadBadge(a.gravedad)}</td>
+      <td>${estadoBadge(a.estado)}</td>
+      <td>${a.reportadoPor}</td>
+      <td class="td-mono">${formatDateTime(a.fecha)}</td>
+    </tr>
+  `).join('');
+}
+
+// ─── EXPORT CSV ────────────────────────────────────────────────────────────
+function exportarCSV() {
+  const alertas = DB.get('alertas');
+  const recursos = DB.get('recursos');
+
+  let csv = 'REPORTE EMERGISOFT\n';
+  csv += `Generado:,${new Date().toLocaleString('es-CR')}\n\n`;
+
+  csv += 'ALERTAS\n';
+  csv += 'ID,Tipo,Ubicación,Gravedad,Estado,Reportado por,Fecha\n';
+  alertas.forEach(a => {
+    csv += `${a.id},${a.tipo},${a.ubicacion},${a.gravedad},${a.estado},${a.reportadoPor},${a.fecha}\n`;
+  });
+
+  csv += '\nRECURSOS\n';
+  csv += 'ID,Nombre,Tipo,Ubicación,Estado,Capacidad\n';
+  recursos.forEach(r => {
+    csv += `${r.id},${r.nombre},${r.tipo},${r.ubicacion},${r.estado},${r.capacidad}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `reporte_emergisoft_${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  showToast('Reporte exportado correctamente.', 'success');
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Solo admin y autoridad
+  if (!Auth.can('verDashboard')) { window.location.href = 'login.html'; return; }
+  const session = Auth.getSession();
+  if (session && !['administrador','autoridad'].includes(session.rol)) {
+    window.location.href = 'index.html'; return;
+  }
+  buildReports();
+});
+</script>
+</body>
+</html>

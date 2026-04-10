@@ -1,0 +1,675 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmergiSoft — Alertas</title>
+  <link rel="stylesheet" href="css/style.css?v=5"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<!-- ─── SIDEBAR OVERLAY (mobile) ─── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🚨</div>
+    <div>
+      <div class="logo-text">EMERGISOFT</div>
+      <div class="logo-sub">Sistema de Gestión</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <a href="index.html" class="sidebar-link"><span class="icon">⊞</span> Dashboard</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Módulos</div>
+    <a href="alertas.html" class="sidebar-link active">
+      <span class="icon">🔔</span> Alertas
+      <span class="sidebar-badge" id="sb-alertas">0</span>
+    </a>
+    <a href="recursos.html" class="sidebar-link"><span class="icon">📦</span> Recursos</a>
+    <a href="usuarios.html" class="sidebar-link"><span class="icon">👥</span> Usuarios</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Sistema</div>
+    <a href="reportes.html" class="sidebar-link"><span class="icon">📊</span> Reportes</a>
+  </div>
+  <div class="sidebar-status">
+    <div class="status-indicator"><div class="status-dot"></div>Sistema operativo</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">v1.0 · Fidélitas</div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menú">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="2" y1="4" x2="16" y2="4"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="14" x2="16" y2="14"/>
+      </svg>
+    </button>
+    <div>
+      <div class="topbar-title">Gestión de Alertas</div>
+      <div class="topbar-breadcrumb">EmergiSoft <span>/ Alertas</span></div>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-time">00:00:00</span>
+      <button class="btn btn-danger btn-sm" onclick="openModal('modalNueva')">+<span class="btn-label"> Registrar Alerta</span></button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Stats rápidas -->
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- Tabla principal -->
+    <div class="card">
+      <div class="card-header">
+        <span>🔔</span>
+        <span class="card-title">Registro de Alertas</span>
+        <span class="card-subtitle" id="countLabel">—</span>
+      </div>
+      <div class="card-body" style="padding-bottom:0">
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar por tipo, ubicación..."/>
+          </div>
+          <select class="filter-select" id="filterGravedad">
+            <option value="">Toda gravedad</option>
+            <option value="critico">Crítico</option>
+            <option value="alto">Alto</option>
+            <option value="medio">Medio</option>
+            <option value="bajo">Bajo</option>
+          </select>
+          <select class="filter-select" id="filterEstado">
+            <option value="">Todo estado</option>
+            <option value="activa">Activa</option>
+            <option value="en_atencion">En atención</option>
+            <option value="resuelta">Resuelta</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ Exportar</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Ubicación</th>
+              <th>Gravedad</th>
+              <th>Estado</th>
+              <th class="col-hide-mobile">Reportado por</th>
+              <th class="col-hide-mobile">Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaAlertas"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="empty-icon">🔕</div>
+        <p>No se encontraron alertas con estos filtros.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ─── MODAL: NUEVA ALERTA ─── -->
+<div class="modal-overlay" id="modalNueva">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span>🚨</span>
+      <span class="modal-title">Registrar Nueva Alerta</span>
+      <button class="modal-close" onclick="closeModal('modalNueva')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo de Emergencia <span class="required">*</span></label>
+          <select class="form-control" id="nTipo">
+            <option value="">Seleccionar...</option>
+            <option>Inundación</option>
+            <option>Incendio</option>
+            <option>Deslizamiento</option>
+            <option>Accidente vial</option>
+            <option>Sismo</option>
+            <option>Falla eléctrica</option>
+            <option>Emergencia médica</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nivel de Gravedad <span class="required">*</span></label>
+          <select class="form-control" id="nGravedad">
+            <option value="">Seleccionar...</option>
+            <option value="critico">Crítico</option>
+            <option value="alto">Alto</option>
+            <option value="medio">Medio</option>
+            <option value="bajo">Bajo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descripción <span class="required">*</span></label>
+        <textarea class="form-control" id="nDesc" placeholder="Describa la situación de emergencia..."></textarea>
+      </div>
+
+      <!-- Mapa interactivo para ubicación -->
+      <div class="form-group">
+        <label class="form-label">Ubicación — Hacé clic en el mapa para seleccionar <span class="required">*</span></label>
+        <div id="modal-map-picker"></div>
+        <div class="coords-display" id="coordsDisplay">
+          <span id="coordsText">📍 Hacé clic en el mapa para marcar la ubicación</span>
+          <span class="coords-hint" id="coordsHint"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nombre del lugar <span class="required">*</span></label>
+        <input type="text" class="form-control" id="nUbicacion" placeholder="Ej: Cartago Centro, Barrio Los Ángeles"/>
+      </div>
+
+      <!-- Campos ocultos para lat/lng -->
+      <input type="hidden" id="nLat" value=""/>
+      <input type="hidden" id="nLng" value=""/>
+
+      <!-- Reportado por: automático desde sesión -->
+      <div class="form-group">
+        <label class="form-label">Reportado por</label>
+        <div class="reportado-display" id="reportadoDisplay">
+          <span id="reportadoNombre">—</span>
+          <span class="r-rol" id="reportadoRol" style="color:var(--accent-blue)">—</span>
+        </div>
+        <!-- Solo admin puede editar -->
+        <select class="form-control" id="nReportado" style="display:none;margin-top:6px">
+          <option>Ciudadano</option>
+          <option>Bomberos</option>
+          <option>Cruz Roja</option>
+          <option>CNE</option>
+          <option>Policía</option>
+          <option>ICE</option>
+          <option>MOPT</option>
+        </select>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalNueva')">Cancelar</button>
+      <button class="btn btn-danger" onclick="registrarAlerta()">🚨 Registrar Alerta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: DETALLE ─── -->
+<div class="modal-overlay" id="modalDetalle">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span>📋</span>
+      <span class="modal-title" id="detalleTitulo">Detalle de Alerta</span>
+      <button class="modal-close" onclick="closeModal('modalDetalle')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Info de la alerta -->
+      <div class="detail-panel" id="detallePanel"></div>
+      <div id="mini-map"></div>
+
+      <!-- Recursos asignados -->
+      <div style="margin-top:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <label class="form-label" style="margin:0">Recursos Asignados</label>
+          <span id="asigCount" class="badge badge-gray">0</span>
+          <button class="btn btn-primary btn-sm" id="btnAsignar" onclick="openModal('modalAsignar')" style="margin-left:auto">+ Asignar Recurso</button>
+        </div>
+        <div id="asignadosList"></div>
+      </div>
+
+      <!-- Cambiar estado -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <label class="form-label">Cambiar Estado</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="cambiarEstado('activa')">🔴 Activa</button>
+          <button class="btn btn-sm" style="background:rgba(245,133,42,0.15);color:var(--accent-orange);border:1px solid var(--accent-orange)" onclick="cambiarEstado('en_atencion')">🟠 En Atención</button>
+          <button class="btn btn-success btn-sm" onclick="cambiarEstado('resuelta')">✓ Resuelta</button>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--accent-red)" onclick="eliminarAlerta()">🗑 Eliminar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: ASIGNAR RECURSO ─── -->
+<div class="modal-overlay" id="modalAsignar">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📦</span>
+      <span class="modal-title">Asignar Recurso a Alerta</span>
+      <button class="modal-close" onclick="closeModal('modalAsignar')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-bar" style="margin-bottom:12px">
+        <div class="search-box" style="flex:1">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchRecursoAsig" placeholder="Buscar recurso disponible..."/>
+        </div>
+        <select class="filter-select" id="filterTipoAsig">
+          <option value="">Todo tipo</option>
+          <option>Hospital</option>
+          <option>Albergue</option>
+          <option>Vehículo</option>
+          <option>Personal</option>
+          <option>Suministros</option>
+        </select>
+      </div>
+      <div id="recursosDisponiblesList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAsignar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notif.js"></script>
+<script src="js/app.js"></script>
+<script>
+let currentId = null;
+let miniMap = null;
+
+function render() {
+  const alertas = DB.get('alertas');
+  const activas = alertas.filter(a=>a.estado==='activa').length;
+  document.getElementById('sb-alertas').textContent = activas;
+  document.getElementById('countLabel').textContent = `${alertas.length} registros`;
+
+  // Stats
+  document.getElementById('statsRow').innerHTML = [
+    { label: 'Activas', value: activas, color:'red', icon:'🚨' },
+    { label: 'En Atención', value: alertas.filter(a=>a.estado==='en_atencion').length, color:'orange', icon:'🚑' },
+    { label: 'Resueltas', value: alertas.filter(a=>a.estado==='resuelta').length, color:'green', icon:'✓' },
+    { label: 'Críticas', value: alertas.filter(a=>a.gravedad==='critico').length, color:'red', icon:'⚠' },
+    { label: 'Total', value: alertas.length, color:'blue', icon:'📋' },
+  ].map(s=>`<div class="stat-card ${s.color}"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div><div class="stat-icon">${s.icon}</div></div>`).join('');
+
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const g = document.getElementById('filterGravedad').value;
+  const e = document.getElementById('filterEstado').value;
+  let alertas = DB.get('alertas');
+
+  if (q) alertas = alertas.filter(a => a.tipo.toLowerCase().includes(q) || a.ubicacion.toLowerCase().includes(q) || a.id.toLowerCase().includes(q));
+  if (g) alertas = alertas.filter(a => a.gravedad === g);
+  if (e) alertas = alertas.filter(a => a.estado === e);
+
+  alertas.sort((a,b) => {
+    const order = {critico:0, alto:1, medio:2, bajo:3};
+    return (order[a.gravedad]||9) - (order[b.gravedad]||9);
+  });
+
+  const tbody = document.getElementById('tablaAlertas');
+  const empty = document.getElementById('emptyState');
+
+  if (!alertas.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = alertas.map(a => `
+    <tr class="gravedad-row ${a.gravedad}" onclick="verDetalle('${a.id}')" style="cursor:pointer">
+      <td class="td-mono">${a.id}</td>
+      <td class="td-primary">${a.tipo}</td>
+      <td>${a.ubicacion}</td>
+      <td>${gravedadBadge(a.gravedad)}</td>
+      <td>${estadoBadge(a.estado)}</td>
+      <td class="col-hide-mobile">${a.reportadoPor}</td>
+      <td class="td-mono col-hide-mobile">${formatDateTime(a.fecha)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();verDetalle('${a.id}')">Ver</button></td>
+    </tr>
+  `).join('');
+}
+
+const tipoIcono = { Hospital:'🏥', Albergue:'🏠', 'Vehículo':'🚑', Personal:'👥', Suministros:'📦' };
+
+function verDetalle(id) {
+  const alerta = DB.get('alertas').find(a => a.id === id);
+  if (!alerta) return;
+  currentId = id;
+  document.getElementById('detalleTitulo').textContent = `${alerta.tipo} — ${alerta.id}`;
+  document.getElementById('detallePanel').innerHTML = `
+    <div class="detail-row"><span class="detail-key">ID</span><span class="detail-val td-mono">${alerta.id}</span></div>
+    <div class="detail-row"><span class="detail-key">Tipo</span><span class="detail-val">${alerta.tipo}</span></div>
+    <div class="detail-row"><span class="detail-key">Ubicación</span><span class="detail-val">${alerta.ubicacion}</span></div>
+    <div class="detail-row"><span class="detail-key">Gravedad</span><span class="detail-val">${gravedadBadge(alerta.gravedad)}</span></div>
+    <div class="detail-row"><span class="detail-key">Estado</span><span class="detail-val">${estadoBadge(alerta.estado)}</span></div>
+    <div class="detail-row"><span class="detail-key">Descripción</span><span class="detail-val">${alerta.descripcion}</span></div>
+    <div class="detail-row"><span class="detail-key">Reportado por</span><span class="detail-val">${alerta.reportadoPor}</span></div>
+    <div class="detail-row"><span class="detail-key">Fecha</span><span class="detail-val td-mono">${formatDateTime(alerta.fecha)}</span></div>
+    <div class="detail-row"><span class="detail-key">Coordenadas</span><span class="detail-val td-mono">${alerta.lat}, ${alerta.lng}</span></div>
+  `;
+
+  // Ocultar botón asignar si no tiene permiso o alerta resuelta
+  const canAssign = Auth.can('gestionarAlerta') && alerta.estado !== 'resuelta';
+  const btnAsignar = document.getElementById('btnAsignar');
+  if (btnAsignar) btnAsignar.style.display = canAssign ? 'inline-flex' : 'none';
+
+  renderAsignados();
+  openModal('modalDetalle');
+
+  setTimeout(() => {
+    if (miniMap) { miniMap.remove(); miniMap = null; }
+    miniMap = L.map('mini-map').setView([alerta.lat, alerta.lng], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 19
+    }).addTo(miniMap);
+    L.circleMarker([alerta.lat, alerta.lng], {
+      radius: 10, color: gravedadColor(alerta.gravedad),
+      fillColor: gravedadColor(alerta.gravedad), fillOpacity: 0.7, weight: 2
+    }).addTo(miniMap).bindPopup(alerta.tipo).openPopup();
+  }, 100);
+}
+
+// ─── ASIGNACIONES ────────────────────────────────────────────────────────────
+
+function renderAsignados() {
+  const asignaciones = DB.get('asignaciones').filter(a => a.idAlerta === currentId);
+  const recursos = DB.get('recursos');
+  const container = document.getElementById('asignadosList');
+  const badge = document.getElementById('asigCount');
+
+  badge.textContent = asignaciones.length;
+  badge.className = asignaciones.length > 0 ? 'badge badge-blue' : 'badge badge-gray';
+
+  if (!asignaciones.length) {
+    container.innerHTML = `<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);border:1px dashed var(--border)">Sin recursos asignados</div>`;
+    return;
+  }
+
+  container.innerHTML = asignaciones.map(asig => {
+    const rec = recursos.find(r => r.id === asig.idRecurso);
+    if (!rec) return '';
+    const canRemove = Auth.can('gestionarAlerta');
+    return `
+      <div class="recurso-asig-card">
+        <span class="rac-icon">${tipoIcono[rec.tipo]||'📦'}</span>
+        <div>
+          <div class="rac-name">${rec.nombre}</div>
+          <div class="rac-meta">${rec.tipo} · ${rec.ubicacion} · Asignado ${timeAgo(asig.fecha)}</div>
+        </div>
+        ${estadoBadge('ocupado')}
+        ${canRemove ? `<button class="rac-remove" onclick="desasignarRecurso('${asig.id}')" title="Liberar recurso">✕</button>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderRecursosDisponibles() {
+  const q = document.getElementById('searchRecursoAsig').value.toLowerCase();
+  const t = document.getElementById('filterTipoAsig').value;
+  const asignaciones = DB.get('asignaciones');
+  const asignadosIds = asignaciones.map(a => a.idRecurso);
+
+  let recursos = DB.get('recursos').filter(r =>
+    r.estado === 'disponible' && !asignadosIds.includes(r.id)
+  );
+  if (q) recursos = recursos.filter(r => r.nombre.toLowerCase().includes(q) || r.ubicacion.toLowerCase().includes(q));
+  if (t) recursos = recursos.filter(r => r.tipo === t);
+
+  const container = document.getElementById('recursosDisponiblesList');
+  if (!recursos.length) {
+    container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px">No hay recursos disponibles${t||q?' con estos filtros':''}</div>`;
+    return;
+  }
+  container.innerHTML = recursos.map(r => `
+    <div class="recurso-picker-item" onclick="asignarRecurso('${r.id}')">
+      <span style="font-size:20px">${tipoIcono[r.tipo]||'📦'}</span>
+      <div>
+        <div class="rpi-name">${r.nombre}</div>
+        <div class="rpi-meta">${r.tipo} · ${r.ubicacion} · Cap: ${r.capacidad}</div>
+      </div>
+      <button class="btn btn-primary btn-sm rpi-btn">Asignar</button>
+    </div>
+  `).join('');
+}
+
+function asignarRecurso(idRecurso) {
+  if (!currentId) return;
+  const session = Auth.getSession();
+
+  // Guardar asignación
+  const asignaciones = DB.get('asignaciones');
+  asignaciones.push({
+    id: genId('AS'),
+    idAlerta: currentId,
+    idRecurso,
+    fecha: new Date().toISOString(),
+    asignadoPor: session ? session.nombre : 'Sistema',
+  });
+  DB.set('asignaciones', asignaciones);
+
+  // Cambiar estado del recurso a ocupado
+  let recursos = DB.get('recursos');
+  const rec = recursos.find(r => r.id === idRecurso);
+  recursos = recursos.map(r => r.id === idRecurso ? {...r, estado: 'ocupado'} : r);
+  DB.set('recursos', recursos);
+
+  closeModal('modalAsignar');
+  renderAsignados();
+  showToast(`${rec?.nombre || 'Recurso'} asignado correctamente.`, 'success');
+
+  // Notificación
+  if (rec) {
+    const alerta = DB.get('alertas').find(a => a.id === currentId);
+    Notif.push({
+      titulo: `Recurso asignado: ${rec.nombre}`,
+      mensaje: `Asignado a "${alerta?.tipo||'alerta'}" en ${alerta?.ubicacion||'—'}`,
+      gravedad: alerta?.gravedad || 'medio',
+    });
+  }
+}
+
+function desasignarRecurso(idAsignacion) {
+  if (!confirm('¿Liberar este recurso?')) return;
+  const asignaciones = DB.get('asignaciones');
+  const asig = asignaciones.find(a => a.id === idAsignacion);
+
+  // Liberar recurso → disponible
+  if (asig) {
+    let recursos = DB.get('recursos');
+    recursos = recursos.map(r => r.id === asig.idRecurso ? {...r, estado: 'disponible'} : r);
+    DB.set('recursos', recursos);
+  }
+
+  DB.set('asignaciones', asignaciones.filter(a => a.id !== idAsignacion));
+  renderAsignados();
+  showToast('Recurso liberado.', 'info');
+}
+
+function cambiarEstado(nuevoEstado) {
+  if (!currentId) return;
+  let alertas = DB.get('alertas');
+  const alerta = alertas.find(a => a.id === currentId);
+  alertas = alertas.map(a => a.id === currentId ? {...a, estado: nuevoEstado} : a);
+  DB.set('alertas', alertas);
+
+  // Si se resuelve, liberar todos los recursos asignados
+  if (nuevoEstado === 'resuelta') {
+    const asignaciones = DB.get('asignaciones').filter(a => a.idAlerta === currentId);
+    if (asignaciones.length) {
+      let recursos = DB.get('recursos');
+      asignaciones.forEach(asig => {
+        recursos = recursos.map(r => r.id === asig.idRecurso ? {...r, estado: 'disponible'} : r);
+      });
+      DB.set('recursos', recursos);
+      DB.set('asignaciones', DB.get('asignaciones').filter(a => a.idAlerta !== currentId));
+      showToast(`${asignaciones.length} recurso(s) liberado(s) automáticamente.`, 'info');
+    }
+  }
+
+  // Notificar cambio de estado
+  if (alerta) {
+    const labels = { activa: 'marcada como Activa', en_atencion: 'En Atención', resuelta: 'Resuelta' };
+    Notif.push({
+      titulo: `Alerta actualizada: ${alerta.tipo}`,
+      mensaje: `${alerta.ubicacion} fue ${labels[nuevoEstado] || nuevoEstado}`,
+      gravedad: alerta.gravedad,
+      alertaId: alerta.id,
+    });
+  }
+  closeModal('modalDetalle');
+  showToast(`Estado actualizado a: ${nuevoEstado}`, 'success');
+  render();
+}
+
+function eliminarAlerta() {
+  if (!currentId || !confirm('¿Eliminar esta alerta permanentemente?')) return;
+  let alertas = DB.get('alertas').filter(a => a.id !== currentId);
+  DB.set('alertas', alertas);
+  closeModal('modalDetalle');
+  showToast('Alerta eliminada.', 'warning');
+  render();
+}
+
+function registrarAlerta() {
+  const tipo = document.getElementById('nTipo').value;
+  const gravedad = document.getElementById('nGravedad').value;
+  const ubicacion = document.getElementById('nUbicacion').value.trim();
+  const desc = document.getElementById('nDesc').value.trim();
+  const lat = parseFloat(document.getElementById('nLat').value);
+  const lng = parseFloat(document.getElementById('nLng').value);
+
+  if (!tipo || !gravedad || !ubicacion || !desc) {
+    showToast('Completá todos los campos obligatorios.', 'error'); return;
+  }
+  if (!lat || !lng) {
+    showToast('Seleccioná la ubicación en el mapa.', 'error'); return;
+  }
+
+  // Reportado por: sesión activa o selector (admin)
+  const session = Auth.getSession();
+  const reportadoPor = session
+    ? session.nombre + ' (' + session.rol + ')'
+    : (document.getElementById('nReportado').value || 'Sistema');
+
+  const alertas = DB.get('alertas');
+  const nueva = {
+    id: genId('A'),
+    tipo, gravedad, ubicacion, lat, lng,
+    descripcion: desc,
+    estado: 'activa',
+    fecha: new Date().toISOString(),
+    reportadoPor
+  };
+  alertas.unshift(nueva);
+  DB.set('alertas', alertas);
+  // ─ Notificación automática según ES-01
+  Notif.notificarAlerta(nueva);
+  closeModal('modalNueva');
+  showToast('¡Alerta registrada exitosamente!', 'success');
+  // Limpiar formulario
+  ['nTipo','nGravedad','nUbicacion','nDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nLat').value = '';
+  document.getElementById('nLng').value = '';
+  document.getElementById('coordsText').textContent = '📍 Hacé clic en el mapa para marcar la ubicación';
+  document.getElementById('coordsHint').textContent = '';
+  if (pickerMarker) { pickerMap.removeLayer(pickerMarker); pickerMarker = null; }
+  render();
+}
+
+function exportCSV() {
+  const alertas = DB.get('alertas');
+  const headers = ['ID','Tipo','Ubicación','Gravedad','Estado','Reportado por','Fecha'];
+  const rows = alertas.map(a => [a.id, a.tipo, a.ubicacion, a.gravedad, a.estado, a.reportadoPor, a.fecha]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'alertas_emergisoft.csv';
+  a.click();
+  showToast('CSV exportado.', 'info');
+}
+
+let pickerMap = null;
+let pickerMarker = null;
+
+function initPickerMap() {
+  if (pickerMap) { pickerMap.invalidateSize(); return; }
+  pickerMap = L.map('modal-map-picker', { zoomControl: true }).setView([9.93, -84.08], 8);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19, attribution: '© CartoDB'
+  }).addTo(pickerMap);
+
+  pickerMap.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    document.getElementById('nLat').value = lat.toFixed(6);
+    document.getElementById('nLng').value = lng.toFixed(6);
+    document.getElementById('coordsText').textContent =
+      `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('coordsHint').textContent = 'Coordenadas seleccionadas ✓';
+
+    if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+    pickerMarker = L.circleMarker([lat, lng], {
+      radius: 10, color: '#e84242', fillColor: '#e84242',
+      fillOpacity: 0.8, weight: 2
+    }).addTo(pickerMap).bindPopup('Ubicación seleccionada').openPopup();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Control de permisos
+  if (!Auth.can('registrarAlerta')) {
+    document.querySelectorAll('[onclick="openModal(\'modalNueva\')"]').forEach(el => el.style.display='none');
+  }
+  if (!Auth.can('gestionarAlerta')) {
+    document.querySelectorAll('[onclick^="cambiarEstado"], [onclick="eliminarAlerta()"]').forEach(el => el.style.display='none');
+  }
+
+  // Reportado por automático desde sesión
+  const session = Auth.getSession();
+  if (session) {
+    const rolLabels = { administrador:'Administrador', autoridad:'Autoridad', rescatista:'Rescatista', ciudadano:'Ciudadano' };
+    const rolColors = { administrador:'#8b5cf6', autoridad:'#4a9eff', rescatista:'#f5852a', ciudadano:'#2dd08a' };
+    document.getElementById('reportadoNombre').textContent = session.nombre;
+    document.getElementById('reportadoRol').textContent = rolLabels[session.rol] || session.rol;
+    document.getElementById('reportadoRol').style.color = rolColors[session.rol] || 'var(--accent-blue)';
+    // Solo admin puede cambiar el campo
+    if (session.rol === 'administrador') {
+      document.getElementById('nReportado').style.display = 'block';
+    }
+  }
+
+  // Inicializar mapa picker cuando se abre el modal
+  document.querySelectorAll('[onclick="openModal(\'modalNueva\')"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTimeout(initPickerMap, 150);
+    });
+  });
+
+  render();
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterGravedad').addEventListener('change', applyFilters);
+  document.getElementById('filterEstado').addEventListener('change', applyFilters);
+
+  // Filtros del modal de asignación
+  document.getElementById('searchRecursoAsig').addEventListener('input', renderRecursosDisponibles);
+  document.getElementById('filterTipoAsig').addEventListener('change', renderRecursosDisponibles);
+
+  // Cargar recursos disponibles al abrir modal asignar
+  document.getElementById('btnAsignar')?.addEventListener('click', () => {
+    setTimeout(renderRecursosDisponibles, 50);
+  });
+});
+</script>
+</body>
+</html>

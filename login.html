@@ -1,0 +1,650 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmergiSoft — Iniciar Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080a0e;
+      --bg2: #0d1018;
+      --bg3: #131720;
+      --card: #181d28;
+      --border: #232938;
+      --border2: #2e3548;
+      --text: #e8ecf4;
+      --text2: #8a93a8;
+      --muted: #4a5270;
+      --red: #e84242;
+      --red-glow: rgba(232,66,66,0.18);
+      --green: #2dd08a;
+      --blue: #4a9eff;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(74,158,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,158,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; z-index: 0;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(232,66,66,0.08) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(74,158,255,0.06) 0%, transparent 70%);
+      bottom: -80px; right: -80px;
+      animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0,0); }
+      50% { transform: translate(20px, 20px); }
+    }
+
+    /* ── SCAN LINE ── */
+    .scanline {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 480px 1fr;
+      grid-template-rows: 1fr;
+      align-items: center;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      grid-column: 1;
+      padding: 60px;
+      display: flex; flex-direction: column; justify-content: center;
+      height: 100%;
+      border-right: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(232,66,66,0.04) 0%, transparent 60%);
+    }
+
+    .brand-icon {
+      width: 56px; height: 56px;
+      background: var(--red);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 30px var(--red-glow);
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { box-shadow: 0 0 20px var(--red-glow); }
+      50% { box-shadow: 0 0 40px rgba(232,66,66,0.3); }
+    }
+
+    .brand-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 32px; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .brand-name span { color: var(--red); }
+
+    .brand-tagline {
+      font-size: 13px; color: var(--text2);
+      margin-bottom: 48px;
+      letter-spacing: 0.04em;
+    }
+
+    .feature-list { display: flex; flex-direction: column; gap: 18px; }
+
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      animation: fadeSlideUp 0.6s ease both;
+    }
+
+    .feature-item:nth-child(1) { animation-delay: 0.1s; }
+    .feature-item:nth-child(2) { animation-delay: 0.2s; }
+    .feature-item:nth-child(3) { animation-delay: 0.3s; }
+    .feature-item:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feature-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--red); flex-shrink: 0;
+      margin-top: 5px;
+      box-shadow: 0 0 8px var(--red-glow);
+    }
+
+    .feature-text strong {
+      display: block; font-size: 13px; font-weight: 600;
+      color: var(--text); margin-bottom: 2px;
+    }
+
+    .feature-text span {
+      font-size: 11px; color: var(--muted);
+    }
+
+    .bottom-badge {
+      margin-top: auto; padding-top: 40px;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    .bottom-badge::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--muted);
+    }
+
+    /* ── LOGIN CARD ── */
+    .login-panel {
+      grid-column: 2;
+      padding: 48px 40px;
+      background: var(--card);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-header { margin-bottom: 36px; }
+
+    .login-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px; font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      font-size: 12px; color: var(--text2);
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      font-size: 10px; font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px; pointer-events: none;
+      color: var(--muted);
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 11px 12px 11px 38px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(232,66,66,0.12);
+    }
+
+    .form-input::placeholder { color: var(--muted); font-size: 13px; }
+
+    .pass-toggle {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 15px; padding: 0;
+    }
+    .pass-toggle:hover { color: var(--text2); }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      background: rgba(232,66,66,0.1);
+      border: 1px solid rgba(232,66,66,0.3);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px; color: var(--red);
+      margin-bottom: 16px;
+      align-items: center; gap: 8px;
+    }
+    .error-msg.show { display: flex; }
+
+    /* Submit btn */
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: var(--red);
+      border: none; border-radius: 6px;
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      font-family: 'IBM Plex Sans', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      transition: all 0.15s;
+      position: relative; overflow: hidden;
+    }
+
+    .btn-login:hover {
+      background: #d03535;
+      box-shadow: 0 0 20px rgba(232,66,66,0.35);
+    }
+
+    .btn-login:active { transform: scale(0.99); }
+
+    .btn-login.loading { pointer-events: none; opacity: 0.7; }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .divider span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; white-space: nowrap; }
+
+    /* Quick access */
+    .quick-access {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+
+    .quick-btn {
+      padding: 9px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    .quick-btn:hover {
+      border-color: var(--border2);
+      background: rgba(255,255,255,0.04);
+      transform: translateY(-1px);
+    }
+
+    .quick-btn .q-role {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .quick-btn .q-user {
+      font-size: 11px; color: var(--text2);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Right panel */
+    .right-panel {
+      grid-column: 3;
+      padding: 60px;
+      display: flex; flex-direction: column;
+      height: 100%;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .status-board {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%; max-width: 280px;
+    }
+
+    .status-board-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px; font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .status-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-row .s-label { color: var(--text2); }
+    .status-row .s-val {
+      display: flex; align-items: center; gap: 5px;
+      color: var(--green); font-family: 'Space Mono', monospace; font-size: 10px;
+    }
+    .s-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    .system-time {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px; font-weight: 700;
+      color: var(--text);
+      margin-top: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .system-date {
+      font-size: 11px; color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .page { grid-template-columns: 1fr 440px; }
+      .left-panel { display: none; }
+      .login-panel { grid-column: 1; }
+      .right-panel { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .page { grid-template-columns: 1fr; }
+      .login-panel { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="scanline"></div>
+
+<div class="page">
+
+  <!-- ─── PANEL IZQUIERDO ─── -->
+  <div class="left-panel">
+    <div class="brand-icon">🚨</div>
+    <div class="brand-name">Emergi<span>Soft</span></div>
+    <div class="brand-tagline">Plataforma de Gestión de Crisis y Emergencias</div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-dot"></div>
+        <div class="feature-text">
+          <strong>Alertas en tiempo real</strong>
+          <span>Registro, validación y notificación inmediata de emergencias</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot"></div>
+        <div class="feature-text">
+          <strong>Gestión de recursos</strong>
+          <span>Hospitales, albergues, vehículos y personal disponibles</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot"></div>
+        <div class="feature-text">
+          <strong>Mapa interactivo</strong>
+          <span>Visualización geoespacial de eventos críticos en curso</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-dot"></div>
+        <div class="feature-text">
+          <strong>Control de acceso por roles</strong>
+          <span>Administrador, Autoridad, Rescatista y Ciudadano</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-badge">Universidad Fidélitas · Costa Rica</div>
+  </div>
+
+  <!-- ─── PANEL LOGIN ─── -->
+  <div class="login-panel">
+    <div class="login-header">
+      <div class="login-title">Iniciar Sesión</div>
+      <div class="login-subtitle">Ingresá tus credenciales para acceder al sistema</div>
+    </div>
+
+    <div class="error-msg" id="errorMsg">
+      <span>⚠</span>
+      <span id="errorText">Usuario o contraseña incorrectos.</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Usuario</label>
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input type="text" class="form-input" id="inputUsuario"
+               placeholder="Ingresá tu usuario" autocomplete="username"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input type="password" class="form-input" id="inputPassword"
+               placeholder="Ingresá tu contraseña" autocomplete="current-password"/>
+        <button class="pass-toggle" id="passToggle" tabindex="-1">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="btnLogin">Ingresar al Sistema</button>
+
+    <div class="divider"><span>Acceso rápido para demostración</span></div>
+
+    <div class="quick-access">
+      <button class="quick-btn" onclick="quickLogin('admin','admin')" style="border-top:2px solid #8b5cf6">
+        <div class="q-role" style="color:#8b5cf6">👑 Administrador</div>
+        <div class="q-user">admin / admin</div>
+      </button>
+      <button class="quick-btn" onclick="quickLogin('autoridad','autoridad')" style="border-top:2px solid #4a9eff">
+        <div class="q-role" style="color:#4a9eff">🛡 Autoridad</div>
+        <div class="q-user">autoridad / autoridad</div>
+      </button>
+      <button class="quick-btn" onclick="quickLogin('rescatista','rescatista')" style="border-top:2px solid #f5852a">
+        <div class="q-role" style="color:#f5852a">🚑 Rescatista</div>
+        <div class="q-user">rescatista / rescatista</div>
+      </button>
+      <button class="quick-btn" onclick="quickLogin('ciudadano','ciudadano')" style="border-top:2px solid #2dd08a">
+        <div class="q-role" style="color:#2dd08a">👤 Ciudadano</div>
+        <div class="q-user">ciudadano / ciudadano</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── PANEL DERECHO ─── -->
+  <div class="right-panel">
+    <div class="system-time" id="clock">00:00:00</div>
+    <div class="system-date" id="clockDate">—</div>
+
+    <div class="status-board" style="margin-top:24px">
+      <div class="status-board-title">Estado del Sistema</div>
+      <div class="status-row">
+        <span class="s-label">Servidor</span>
+        <span class="s-val"><div class="s-dot"></div>Operativo</span>
+      </div>
+      <div class="status-row">
+        <span class="s-label">Base de Datos</span>
+        <span class="s-val"><div class="s-dot"></div>Conectada</span>
+      </div>
+      <div class="status-row">
+        <span class="s-label">API de Mapas</span>
+        <span class="s-val"><div class="s-dot"></div>Activa</span>
+      </div>
+      <div class="status-row">
+        <span class="s-label">Notificaciones</span>
+        <span class="s-val"><div class="s-dot"></div>En línea</span>
+      </div>
+      <div class="status-row">
+        <span class="s-label">Uptime</span>
+        <span class="s-val">99.8%</span>
+      </div>
+    </div>
+
+    <div class="status-board" style="margin-top:14px; max-width:280px; width:100%">
+      <div class="status-board-title">Alertas Activas</div>
+      <div id="sideAlerts" style="font-size:12px;color:#8a93a8;font-family:'Space Mono',monospace">Cargando...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── CLOCK ──
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('es-CR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('clockDate').textContent =
+      now.toLocaleDateString('es-CR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── ALERTS PREVIEW ──
+  try {
+    const alertas = JSON.parse(localStorage.getItem('emergisoft_alertas') || '[]');
+    const activas = alertas.filter(a => a.estado === 'activa');
+    const el = document.getElementById('sideAlerts');
+    if (activas.length) {
+      el.innerHTML = activas.slice(0,3).map(a =>
+        `<div style="padding:5px 0;border-bottom:1px solid #232938;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#e8ecf4;font-size:11px">${a.tipo}</span>
+          <span style="font-size:10px;color:${a.gravedad==='critico'?'#e84242':a.gravedad==='alto'?'#f5852a':'#f0c040'}">${a.gravedad.toUpperCase()}</span>
+        </div>`
+      ).join('') + (activas.length > 3 ? `<div style="font-size:10px;color:#4a5270;margin-top:6px">+${activas.length-3} más...</div>` : '');
+    } else {
+      el.textContent = 'Sin alertas activas';
+    }
+  } catch(e) {
+    document.getElementById('sideAlerts').textContent = 'Sin datos';
+  }
+
+  // ── USUARIOS DEFINIDOS ──
+  const USERS = [
+    { usuario: 'admin',      password: 'admin',      nombre: 'María Solano',   rol: 'administrador' },
+    { usuario: 'autoridad',  password: 'autoridad',  nombre: 'Carlos Jiménez', rol: 'autoridad' },
+    { usuario: 'rescatista', password: 'rescatista', nombre: 'Ana Torres',     rol: 'rescatista' },
+    { usuario: 'ciudadano',  password: 'ciudadano',  nombre: 'Luis Mora',      rol: 'ciudadano' },
+  ];
+
+  function doLogin(usuario, password) {
+    const user = USERS.find(u => u.usuario === usuario && u.password === password);
+    if (!user) return false;
+    sessionStorage.setItem('emergisoft_session', JSON.stringify({
+      ...user, loginAt: new Date().toISOString()
+    }));
+    return true;
+  }
+
+  function quickLogin(u, p) {
+    document.getElementById('inputUsuario').value = u;
+    document.getElementById('inputPassword').value = p;
+    setTimeout(() => submitLogin(), 150);
+  }
+
+  function submitLogin() {
+    const u = document.getElementById('inputUsuario').value.trim();
+    const p = document.getElementById('inputPassword').value;
+    const btn = document.getElementById('btnLogin');
+    const err = document.getElementById('errorMsg');
+
+    if (!u || !p) {
+      err.classList.add('show');
+      document.getElementById('errorText').textContent = 'Completá usuario y contraseña.';
+      return;
+    }
+
+    btn.classList.add('loading');
+    btn.textContent = 'Verificando...';
+
+    setTimeout(() => {
+      if (doLogin(u, p)) {
+        btn.textContent = '✓ Acceso concedido';
+        btn.style.background = '#2dd08a';
+        setTimeout(() => { window.location.href = 'index.html'; }, 600);
+      } else {
+        err.classList.add('show');
+        document.getElementById('errorText').textContent = 'Usuario o contraseña incorrectos.';
+        btn.classList.remove('loading');
+        btn.textContent = 'Ingresar al Sistema';
+        btn.style.background = '';
+        document.getElementById('inputPassword').value = '';
+        document.getElementById('inputPassword').focus();
+      }
+    }, 500);
+  }
+
+  // ── EVENTS ──
+  document.getElementById('btnLogin').addEventListener('click', submitLogin);
+
+  ['inputUsuario','inputPassword'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitLogin();
+      document.getElementById('errorMsg').classList.remove('show');
+    });
+  });
+
+  document.getElementById('passToggle').addEventListener('click', () => {
+    const input = document.getElementById('inputPassword');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+
+  // ── Si ya hay sesión, redirigir directo ──
+  if (sessionStorage.getItem('emergisoft_session')) {
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>
