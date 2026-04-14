@@ -4,6 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EmergiSoft — Iniciar Sesión</title>
+  <link rel="icon" type="image/x-icon" href="img/favicon.ico"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,13 +102,16 @@
 
     .brand-icon {
       width: 56px; height: 56px;
-      background: var(--red);
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
       margin-bottom: 24px;
-      box-shadow: 0 0 30px var(--red-glow);
+      overflow: hidden;
       animation: iconPulse 3s ease-in-out infinite;
+    }
+    .brand-icon img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: block;
     }
 
     @keyframes iconPulse {
@@ -410,7 +417,7 @@
 
   <!-- ─── PANEL IZQUIERDO ─── -->
   <div class="left-panel">
-    <div class="brand-icon">🚨</div>
+    <div class="brand-icon"><img src="img/android-chrome-192x192.png" alt="EmergiSoft"/></div>
     <div class="brand-name">Emergi<span>Soft</span></div>
     <div class="brand-tagline">Plataforma de Gestión de Crisis y Emergencias</div>
 
