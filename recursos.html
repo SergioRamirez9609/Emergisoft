@@ -60,7 +60,7 @@
     </div>
     <div class="topbar-actions">
       <span class="topbar-time">00:00:00</span>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modalNuevo')">+<span class="btn-label"> Registrar Recurso</span></button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modalNuevo'); setTimeout(initRPickerMap, 80)">+<span class="btn-label"> Registrar Recurso</span></button>
     </div>
   </header>
 
@@ -137,7 +137,7 @@
 
 <!-- MODAL: Nuevo Recurso -->
 <div class="modal-overlay" id="modalNuevo">
-  <div class="modal">
+  <div class="modal wide">
     <div class="modal-header">
       <span>📦</span>
       <span class="modal-title">Registrar Recurso</span>
@@ -172,15 +172,15 @@
         <label class="form-label">Ubicación <span class="required">*</span></label>
         <input type="text" class="form-control" id="rUbicacion" placeholder="Ej: San José Centro"/>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Latitud</label>
-          <input type="number" class="form-control" id="rLat" placeholder="9.9325" step="0.0001"/>
+      <div class="form-group">
+        <label class="form-label">Coordenadas <span class="required">*</span></label>
+        <div id="rMapPicker" style="height:260px;border-radius:var(--radius-sm);border:1px solid var(--border-bright);cursor:crosshair;"></div>
+        <div class="coords-display" id="rCoordsDisplay" style="margin-top:6px;">
+          <span id="rCoordsText">📍 Hacé clic en el mapa para marcar la ubicación</span>
+          <span class="coords-hint" id="rCoordsHint"></span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Longitud</label>
-          <input type="number" class="form-control" id="rLng" placeholder="-84.0795" step="0.0001"/>
-        </div>
+        <input type="hidden" id="rLat" value=""/>
+        <input type="hidden" id="rLng" value=""/>
       </div>
       <div class="form-group">
         <label class="form-label">Capacidad / Cantidad</label>
@@ -249,6 +249,31 @@ let currentId = null;
 let currentView = 'cards';
 let mapaInit = false;
 let mapa = null;
+let rPickerMap = null;
+let rPickerMarker = null;
+
+function initRPickerMap() {
+  if (rPickerMap) { rPickerMap.invalidateSize(); return; }
+  rPickerMap = L.map('rMapPicker', { zoomControl: true }).setView([9.93, -84.08], 8);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '©OpenStreetMap ©Carto', maxZoom: 19
+  }).addTo(rPickerMap);
+  rPickerMap.on('click', function(e) {
+    const lat = e.latlng.lat, lng = e.latlng.lng;
+    document.getElementById('rLat').value = lat.toFixed(6);
+    document.getElementById('rLng').value = lng.toFixed(6);
+    document.getElementById('rCoordsText').textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('rCoordsHint').textContent = 'Coordenadas seleccionadas ✓';
+    if (rPickerMarker) rPickerMap.removeLayer(rPickerMarker);
+    rPickerMarker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="width:14px;height:14px;background:#4a9eff;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px rgba(74,158,255,0.8);"></div>',
+        iconSize: [14, 14], iconAnchor: [7, 7]
+      })
+    }).addTo(rPickerMap).bindPopup('Ubicación del recurso').openPopup();
+  });
+}
 
 const tipoIcono = { Hospital:'🏥', Albergue:'🏠', 'Vehículo':'🚑', Personal:'👥', Suministros:'📦' };
 
@@ -390,13 +415,14 @@ function registrarRecurso() {
   const nombre = document.getElementById('rNombre').value.trim();
   const tipo = document.getElementById('rTipo').value;
   const ubicacion = document.getElementById('rUbicacion').value.trim();
+  const lat = parseFloat(document.getElementById('rLat').value);
+  const lng = parseFloat(document.getElementById('rLng').value);
   if (!nombre || !tipo || !ubicacion) { showToast('Completá los campos obligatorios.', 'error'); return; }
+  if (!lat || !lng) { showToast('Seleccioná la ubicación en el mapa.', 'error'); return; }
   const recursos = DB.get('recursos');
   recursos.unshift({
     id: genId('R'),
-    nombre, tipo, ubicacion,
-    lat: parseFloat(document.getElementById('rLat').value)||9.93,
-    lng: parseFloat(document.getElementById('rLng').value)||-84.08,
+    nombre, tipo, ubicacion, lat, lng,
     estado: document.getElementById('rEstado').value,
     capacidad: parseInt(document.getElementById('rCapacidad').value)||0,
     cantidad: 1,
@@ -404,7 +430,13 @@ function registrarRecurso() {
   DB.set('recursos', recursos);
   closeModal('modalNuevo');
   showToast('Recurso registrado.', 'success');
-  ['rNombre','rTipo','rUbicacion','rLat','rLng','rCapacidad'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['rNombre','rUbicacion','rCapacidad'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('rTipo').value = '';
+  document.getElementById('rLat').value = '';
+  document.getElementById('rLng').value = '';
+  document.getElementById('rCoordsText').textContent = '📍 Hacé clic en el mapa para marcar la ubicación';
+  document.getElementById('rCoordsHint').textContent = '';
+  if (rPickerMarker) { rPickerMap.removeLayer(rPickerMarker); rPickerMarker = null; }
   render();
 }
 
